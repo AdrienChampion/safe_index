@@ -24,7 +24,7 @@
 //! use safe_index::new_index;
 //! new_index!{
 //!     /// Arity.
-//!     Arity
+//!     Arity,
 //! }
 //! assert_eq! { std::mem::size_of::<Arity>(), std::mem::size_of::<usize>() }
 //! ```
@@ -52,21 +52,21 @@
 #[macro_export]
 macro_rules! new_index {
     // Btree set (internal).
-    ( @internal $t:ident $(#[$cmt:meta])? btree set: $set:ident $($tail:tt)* ) => (
+    ( @internal $t:ident, $(#[$cmt:meta])? btree set: $set:ident $($tail:tt)* ) => (
         $(#[$cmt])?
         pub type $set = std::collections::BTreeSet<$t> ;
         $crate::new_index!{ @internal $t $($tail)* }
     ) ;
 
     // Btree map (internal).
-    ( @internal $t:ident $(#[$cmt:meta])? btree map: $map:ident $($tail:tt)* ) => (
+    ( @internal $t:ident, $(#[$cmt:meta])? btree map: $map:ident $($tail:tt)* ) => (
         $(#[$cmt])?
         pub type $map<T> = std::collections::BTreeMap<$t, T> ;
         $crate::new_index!{ @internal $t $($tail)* }
     ) ;
 
     // Range (internal).
-    ( @internal $t:ident $(#[$cmt:meta])? range: $range:ident $($tail:tt)* ) => (
+    ( @internal $t:ident, $(#[$cmt:meta])? range: $range:ident $($tail:tt)* ) => (
         impl $t {
             /// Creates a range between two indices (upper bound is exclusive).
             pub fn up_to(self, end : $t) -> $range {
@@ -107,7 +107,7 @@ macro_rules! new_index {
 
     // Map: vector indexed by `$t` (internal).
     (
-        @internal $t:ident $(#[$cmt:meta])?
+        @internal $t:ident, $(#[$cmt:meta])?
         map: $map:ident with iter: $iter:ident
         $($tail:tt)*
     ) => (
@@ -140,11 +140,7 @@ macro_rules! new_index {
             pub fn with_capacity(capacity: usize) -> Self {
                 $map { vec: Vec::with_capacity(capacity) }
             }
-            /// Clears a map.
-            #[inline]
-            pub fn clear(& mut self) {
-                self.vec.clear()
-            }
+
             /// Number of elements in the map.
             #[inline]
             pub fn len(& self) -> usize {
@@ -155,21 +151,38 @@ macro_rules! new_index {
             pub fn capacity(& self) -> usize {
                 self.vec.capacity()
             }
+
             /// The next free index (wrapped `self.len()`).
             #[inline]
             pub fn next_index(& self) -> $t {
                 self.len().into()
             }
+            /// The last index in the map.
+            #[inline]
+            pub fn last_index(& self) -> Option<$t> {
+                let len = self.len();
+                if len > 0 { Some((len - 1).into()) } else { None }
+            }
+
             /// Pushes an element.
             #[inline]
-            pub fn push(& mut self, elem: T) {
-                self.vec.push(elem)
+            pub fn push(& mut self, elem: T) -> $t {
+                let idx = self.next_index();
+                self.vec.push(elem);
+                idx
             }
             /// Pops an element.
             #[inline]
             pub fn pop(& mut self) -> Option<T> {
                 self.vec.pop()
             }
+
+            /// Clears a map.
+            #[inline]
+            pub fn clear(& mut self) {
+                self.vec.clear()
+            }
+
             /// Iterates over the elements.
             #[inline]
             pub fn iter(& self) -> std::slice::Iter<T> {
@@ -199,6 +212,7 @@ macro_rules! new_index {
             pub fn iter_mut(& mut self) -> std::slice::IterMut<T> {
                 self.vec.iter_mut()
             }
+
             /// Shrinks the capacity as much as possible.
             #[inline]
             pub fn shrink_to_fit(& mut self) {
@@ -215,6 +229,7 @@ macro_rules! new_index {
                 self.vec.swap_remove(* idx)
             }
         }
+
         impl<T: Clone> $map<T> {
             /// Creates an empty vector with some capacity.
             #[inline]
@@ -227,14 +242,9 @@ macro_rules! new_index {
                 self.vec.eq( & other.vec )
             }
         }
+
         impl<T: Eq> Eq for $map<T> {}
-        impl<T: std::hash::Hash> std::hash::Hash for $map<T> {
-            fn hash<H: std::hash::Hasher>(& self, state: & mut H) {
-                for elem in & self.vec {
-                    elem.hash(state)
-                }
-            }
-        }
+
         impl<T> std::convert::From< Vec<T> > for $map<T> {
             fn from(vec: Vec<T>) -> Self {
                 $map { vec }
@@ -393,7 +403,7 @@ macro_rules! new_index {
     ) ;
 
     // Terminal case (internal).
-    ( @internal $t:ident ) => () ;
+    ( @internal $t:ident $(,)? ) => () ;
 
     // Entry point.
     (
