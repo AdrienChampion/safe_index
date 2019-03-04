@@ -204,3 +204,50 @@ impl Data {
         res
     }
 }
+
+#[test]
+fn run() {
+    let mut data = Data::new();
+
+    let c_1 = data.add_client("client 1");
+    let c_2 = data.add_client("client 2");
+    let c_3 = data.add_client("client 3");
+    let c_4 = data.add_client("client 4");
+
+    let f_1 = data.add_file(FileInfo::new("file 1", vec![c_1, c_2]));
+    let f_2 = data.add_file(FileInfo::new("file 2", vec![c_3]));
+    let f_3 = data.add_file(FileInfo::new("file 3", vec![c_2]));
+    let f_4 = data.add_file(FileInfo::new("file 4", vec![c_4]));
+
+    let classes = data.client_clusters();
+    let expected: Vec<(ClientSet, FileSet)> = vec![
+        (
+            vec![c_1, c_2].into_iter().collect(),
+            vec![f_1, f_3].into_iter().collect(),
+        ),
+        (
+            vec![c_3].into_iter().collect(),
+            vec![f_2].into_iter().collect(),
+        ),
+        (
+            vec![c_4].into_iter().collect(),
+            vec![f_4].into_iter().collect(),
+        ),
+    ];
+    assert_eq! { classes, expected }
+
+    data.add_client_to_file(c_3, f_3);
+
+    let classes = data.client_clusters();
+    let expected: Vec<(ClientSet, FileSet)> = vec![
+        (
+            vec![c_1, c_2, c_3].into_iter().collect(),
+            vec![f_1, f_2, f_3].into_iter().collect(),
+        ),
+        (
+            vec![c_4].into_iter().collect(),
+            vec![f_4].into_iter().collect(),
+        ),
+    ];
+    assert_eq! { classes, expected }
+}
