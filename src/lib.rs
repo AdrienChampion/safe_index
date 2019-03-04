@@ -18,32 +18,34 @@
 //!
 //! # Usage
 //!
-//! The most basic use-case is simply to wrap something:
+//! The most basic use of this crate is to just wrap something:
 //!
 //! ```
 //! use safe_index::new_index;
 //! new_index!{
 //!     /// Arity.
-//!     Arity,
+//!     Arity
 //! }
 //! assert_eq! { std::mem::size_of::<Arity>(), std::mem::size_of::<usize>() }
 //! ```
 //!
-//! This is not very useful however, so the macro can provide more types. After the optional
-//! comment and wrapper identifier `Idx`, you can add the following tags using the syntax `<tag>:
-//! <ident>` (see also the [examples]) to give the name `<ident>` to:
+//! This is not very useful however, so the macro can provide more types. After the mandatory
+//! identifier `Idx` for the type of indices, you can add the constructors below:
 //!
-//! - `range`: an iterator between two `Idx`s (the upper bound is exclusive). If this tag is
-//!   present, `Idx` will have a `up_to` function that creates a range between two `Idx`s. This tag
-//!   can only appear once.
-//! - `map`: wrapper around a vector indexed by `Idx` instead of `usize` to access elements. This
-//!   tag must be followed by `with iter: <typ>` to give the iterator over maps the name `<typ>`.
-//! - `btree set`: alias type for a binary tree set of `Idx`s.
-//! - `btree map`: alias type for a binary tree map from `Idx` to something.
+//! - `range <Range>`: creates an iterator named `<Range>` between two `Idx`s (the upper bound is
+//!   exclusive). If this constructor is present, `Idx` will have a `up_to` function that creates a
+//!   range between two `Idx`s. This constructor can only appear once.
+//! - `map <Map> with iter: <MapIter>`: creates a wrapper named `<Map>` around a vector, indexed by
+//!   `Idx`. `<MapIter>` is the type of iterators over `<Map>`.
+//! - `btree set <Set>`: alias type for a binary tree set of `Idx`s.
+//! - `btree map <Map>`: alias type for a binary tree map from `Idx` to something.
+//!
+//!
+//! See the [`examples` module] for illustrations of the `new_index` macro.
 //!
 //!
 //! [`new_index`]: ../../macro.new_index.html (new_index macro)
-//! [examples]: examples/index.html (safe_index examples)
+//! [`examples` module]: examples/index.html (safe_index examples)
 
 /// Wraps a `usize` into a struct (zero-cost). Also generates the relevant collections indexed by
 /// the wrapper.
@@ -297,14 +299,14 @@ macro_rules! new_index {
                 self.vec.index(index)
             }
         }
-        // impl<T> std::ops::Index<
-        //   std::ops::RangeInclusive<usize>
-        // > for $map<T> {
-        //   type Output = [T] ;
-        //   fn index(& self, index: std::ops::RangeInclusive<usize>) -> & [T] {
-        //     self.vec.index(index)
-        //   }
-        // }
+        impl<T> std::ops::Index<
+          std::ops::RangeInclusive<usize>
+        > for $map<T> {
+          type Output = [T] ;
+          fn index(& self, index: std::ops::RangeInclusive<usize>) -> & [T] {
+            self.vec.index(index)
+          }
+        }
         impl<T> std::ops::Index<
             std::ops::RangeFrom<usize>
         > for $map<T> {
