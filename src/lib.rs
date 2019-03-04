@@ -1,24 +1,19 @@
-//! Strongly-typed, zero-cost indices wrapping integers.
+//! Strongly-typed, zero-cost indexes wrapping integers.
 //!
-//! This crate is just one macro: [`new_index`].
+//! This crate is just one macro: [`new_index`]. It creates a wrapper around `usize` to make
+//! type-safe indexes. That is, the indexes for your clients that you use to retrieve information
+//! efficiently from the vector of client information do not have the same type as the indexes for
+//! the files you have about your clients. [The example below](#example) illustrates this crate in
+//! that context.
 //!
-//! Typically used when storing values of some type, say `Term`, in an array. Usually some things
-//! will be associated with these terms (like the term's *free variables*), which one would usually
-//! put in another array understood as using the same indices as the term array.
+//! The index type created implements
 //!
-//! But when doing this for more than one type, there is a strong risk of using a *term index* for
-//! something else. This module wraps `usize`s and gives specialized collections making it
-//! impossible to mix indices statically.
-//!
-//! The index type created
-//!
-//! - implements `Deref` and `From` for `usize`,
-//! - implements `Debug`, `Clone`, `Copy`, `PartialOrd`, `Ord`, `PartialEq`,
-//!     `Eq`, `Hash` and `Display`.
+//! - `Deref` and `From` for `usize`,
+//! - `Debug`, `Clone`, `Copy`, `PartialOrd`, `Ord`, `PartialEq`, `Eq`, `Hash` and `Display`.
 //!
 //! # Usage
 //!
-//! The most basic use of this crate is to just wrap something:
+//! The most basic use of `new_index` is just to wrap something:
 //!
 //! ```
 //! use safe_index::new_index;
@@ -29,8 +24,9 @@
 //! assert_eq! { std::mem::size_of::<Arity>(), std::mem::size_of::<usize>() }
 //! ```
 //!
-//! This is not very useful however, so the macro can provide more types. After the mandatory
-//! identifier `Idx` for the type of indices, you can add the constructors below:
+//! This is not very useful however, there's nothing for our index to index. Thankfully `new_index`
+//! can provide more types. After the mandatory identifier `Idx` for the type of indexes, you can
+//! add these:
 //!
 //! - `range <Range>`: creates an iterator named `<Range>` between two `Idx`s (the upper bound is
 //!   exclusive). If this constructor is present, `Idx` will have a `up_to` function that creates a
@@ -41,11 +37,135 @@
 //! - `btree map <Map>`: alias type for a binary tree map from `Idx` to something.
 //!
 //!
-//! See the [`examples` module] for illustrations of the `new_index` macro.
+//! See the [`examples` module] and the example below for illustrations of the `new_index` macro.
 //!
+//! # Example
+//!
+//! All the code for this example is in [`examples::clients`]. Say we have a `Data` structure that
+//! stores some clients in a vector. It also stores files about these clients. A client can be
+//! associated to several files, and a file can be about several clients. Let's handle everything
+//! by indexes:
+//!
+//! ```rust
+//! # use std::collections::BTreeSet;
+//! /// Client information.
+//! pub struct ClientInfo {
+//!     /// Name of the client.
+//!     pub name: String,
+//!     /// Indices of files associated with the client.
+//!     pub files: BTreeSet<usize>,
+//! }
+//! /// File information.
+//! pub struct FileInfo {
+//!     /// Name of the file.
+//!     pub name: String,
+//!     /// Indices of clients concerned by the file.
+//!     pub clients: BTreeSet<usize>,
+//! }
+//!
+//! /// Aggregates clients and files info.
+//! pub struct Data {
+//!     /// Map from client indexes to client information.
+//!     pub clients: Vec<ClientInfo>,
+//!     /// Map from file indexes to file information.
+//!     pub files: Vec<FileInfo>,
+//! }
+//! ```
+//!
+//! Now, implementing `Data`'s functionalities is going to be painful. Client and file indexes are
+//! both `usize`, terrible things are bound to happen.
+//!
+//! So let's instead create an index type for each.
+//!
+//! ```rust
+//! /// Indices.
+//! pub mod idx {
+//!     safe_index::new_index! {
+//!         /// Indices of clients.
+//!         Client,
+//!         /// Map from clients to something (really a vector).
+//!         map: Clients with iter: ClientIter,
+//!         /// Set of clients.
+//!         btree set: ClientSet,
+//!     }
+//!
+//!     safe_index::new_index! {
+//!         /// Indices of files.
+//!         File,
+//!         /// Map from files to something (really a vector).
+//!         map: Files with iter: FileIter,
+//!         /// Set of files.
+//!         btree set: FileSet,
+//!     }
+//! }
+//!
+//! use idx::*;
+//!
+//! # use std::collections::BTreeSet;
+//! /// Client information.
+//! pub struct ClientInfo {
+//!     /// Name of the client.
+//!     pub name: String,
+//!     /// Indices of files associated with the client.
+//!     pub files: ClientSet,
+//! }
+//! /// File information.
+//! pub struct FileInfo {
+//!     /// Name of the file.
+//!     pub name: String,
+//!     /// Indices of clients concerned by the file.
+//!     pub clients: FileSet,
+//! }
+//!
+//! /// Aggregates clients and files info.
+//! pub struct Data {
+//!     /// Map from client indexes to client information.
+//!     pub clients: Clients<ClientInfo>,
+//!     /// Map from file indexes to file information.
+//!     pub files: Files<FileInfo>,
+//! }
+//! ```
+//!
+//! The full code is available [here][clients src], and you can see it used in the documentation of
+//! [`examples::clients`]. Here are a few functions on `Data` to (hopefully) show that `Client` and
+//! `File` behave as (and in fact are) `usize` indexes.
+//!
+//! ```rust
+//! # use safe_index::examples::clients::{idx::*, ClientInfo, FileInfo};
+//! /// Aggregates clients and files info.
+//! pub struct Data {
+//!     /// Map from client indexes to client information.
+//!     pub clients: Clients<ClientInfo>,
+//!     /// Map from file indexes to file information.
+//!     pub files: Files<FileInfo>,
+//! }
+//! impl Data {
+//!     /// Adds a file, updates the clients concerned.
+//!     pub fn add_file(&mut self, file: FileInfo) -> File {
+//!         let idx = self.files.next_index();
+//!         for client in &file.clients {
+//!             let is_new = self.clients[*client].files.insert(idx);
+//!             debug_assert! { is_new }
+//!         }
+//!         let nu_idx = self.files.push(file);
+//!         debug_assert_eq! { idx, nu_idx }
+//!         idx
+//!     }
+//!
+//!     /// Adds a client to a file.
+//!     pub fn add_client_to_file(&mut self, client: Client, file: File) {
+//!         let is_new = self.files[file].clients.insert(client);
+//!         debug_assert! { is_new }
+//!         let is_new = self.clients[client].files.insert(file);
+//!         debug_assert! { is_new }
+//!     }
+//! }
+//! ```
 //!
 //! [`new_index`]: ../../macro.new_index.html (new_index macro)
 //! [`examples` module]: examples/index.html (safe_index examples)
+//! [`examples::clients`]: examples/clients/index.html (clients example)
+//! [clients src]: examples/clients.rs.html (Code of the clients example)
 
 /// Wraps a `usize` into a struct (zero-cost). Also generates the relevant collections indexed by
 /// the wrapper.
@@ -70,7 +190,7 @@ macro_rules! new_index {
     // Range (internal).
     ( @internal $t:ident, $(#[$cmt:meta])? range: $range:ident $($tail:tt)* ) => (
         impl $t {
-            /// Creates a range between two indices (upper bound is exclusive).
+            /// Creates a range between two indexes (upper bound is exclusive).
             pub fn up_to(self, end : $t) -> $range {
                 $range { start: self, end }
             }

@@ -123,6 +123,8 @@ impl Data {
     }
 
     /// Adds a client.
+    ///
+    /// Does not add the client again if it's already there (by name).
     pub fn add_client<S: Into<String>>(&mut self, name: S) -> Client {
         let name = name.into();
         for (client, info) in self.clients.index_iter() {
