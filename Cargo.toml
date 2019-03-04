@@ -1,7 +1,15 @@
 [package]
 name = "safe_index"
-version = "0.1.0"
-authors = ["AdrienChampion <adrien.champion@email.com>"]
+version = "0.9.0"
+authors = ["Adrien Champion <adrien.champion@email.com>"]
+description = "Type-safe indexes."
+documentation = "https://docs.rs/safe_index"
+homepage = "https://github.com/AdrienChampion/safe_index"
+repository = "https://github.com/AdrienChampion/safe_index"
+readme = "README.md"
+categories = ["rust patterns"]
+keywords = ["type-safety", "indexing"]
+license = "MIT"
 edition = "2018"
 
 [dependencies]

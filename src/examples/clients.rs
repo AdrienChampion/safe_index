@@ -50,7 +50,7 @@
 
 /// Indices.
 pub mod idx {
-    new_index! {
+    new! {
         /// Indices of clients.
         Client,
         /// Map from clients to something.
@@ -59,7 +59,7 @@ pub mod idx {
         btree set: ClientSet,
     }
 
-    new_index! {
+    new! {
         /// Indices of files.
         File,
         /// Map from files to something.
@@ -108,9 +108,9 @@ impl std::ops::Index<Client> for Data {
 
 /// Aggregates client and file info.
 pub struct Data {
-    /// Map from client indices to client information.
+    /// Map from client indexes to client information.
     pub clients: Clients<ClientInfo>,
-    /// Map from file indices to file information.
+    /// Map from file indexes to file information.
     pub files: Files<FileInfo>,
 }
 impl Data {

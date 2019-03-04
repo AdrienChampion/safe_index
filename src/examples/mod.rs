@@ -5,17 +5,16 @@
 /// Example of zero-cost wrapping. **Do not use this.**
 ///
 /// ```
-/// use safe_index::new_index;
-/// new_index!{
+/// safe_index::new!{
 ///     /// Index of a variable.
 ///     VarIndex,
 ///     /// Range over `VarIndex`.
 ///     range: VarRange,
-///     /// Set of variable indices.
+///     /// Set of variable indexes.
 ///     btree set: VarBSet,
-///     /// Map of variable indices.
+///     /// Map of variable indexes.
 ///     btree map: VarBMap,
-///     /// Vector indexed by variable indices.
+///     /// Vector indexed by variable indexes.
 ///     map: VarMap with iter: VarMapIter,
 /// }
 /// fn main() {
@@ -61,16 +60,16 @@
 /// }
 /// ```
 pub mod basic {
-    new_index! {
+    new! {
         /// Index of a variable.
         VarIndex,
         /// Range over `VarIndex`.
         range: VarRange,
-        /// Set of variable indices.
+        /// Set of variable indexes.
         btree set: VarBSet,
-        /// Map of variable indices.
+        /// Map of variable indexes.
         btree map: VarBMap,
-        /// Vector indexed by variable indices.
+        /// Vector indexed by variable indexes.
         map: VarMap with iter: VarMapIter,
     }
 }

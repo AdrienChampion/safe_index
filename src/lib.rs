@@ -1,6 +1,6 @@
 //! Strongly-typed, zero-cost indexes wrapping integers.
 //!
-//! This crate is just one macro: [`new_index`]. It creates a wrapper around `usize` to make
+//! This crate is just one macro: [`new`]. It creates a wrapper around `usize` to make
 //! type-safe indexes. That is, the indexes for your clients that you use to retrieve information
 //! efficiently from the vector of client information do not have the same type as the indexes for
 //! the files you have about your clients. [The example below](#example) illustrates this crate in
@@ -13,18 +13,17 @@
 //!
 //! # Usage
 //!
-//! The most basic use of `new_index` is just to wrap something:
+//! The most basic use of `new` is just to wrap something:
 //!
 //! ```
-//! use safe_index::new_index;
-//! new_index!{
+//! safe_index::new!{
 //!     /// Arity.
 //!     Arity
 //! }
 //! assert_eq! { std::mem::size_of::<Arity>(), std::mem::size_of::<usize>() }
 //! ```
 //!
-//! This is not very useful however, there's nothing for our index to index. Thankfully `new_index`
+//! This is not very useful however, there's nothing for our index to index. Thankfully `new`
 //! can provide more types. After the mandatory identifier `Idx` for the type of indexes, you can
 //! add these:
 //!
@@ -37,7 +36,7 @@
 //! - `btree map <Map>`: alias type for a binary tree map from `Idx` to something.
 //!
 //!
-//! See the [`examples` module] and the example below for illustrations of the `new_index` macro.
+//! See the [`examples` module] and the example below for illustrations of the `new` macro.
 //!
 //! # Example
 //!
@@ -80,7 +79,7 @@
 //! ```rust
 //! /// Indices.
 //! pub mod idx {
-//!     safe_index::new_index! {
+//!     safe_index::new! {
 //!         /// Indices of clients.
 //!         Client,
 //!         /// Map from clients to something (really a vector).
@@ -89,7 +88,7 @@
 //!         btree set: ClientSet,
 //!     }
 //!
-//!     safe_index::new_index! {
+//!     safe_index::new! {
 //!         /// Indices of files.
 //!         File,
 //!         /// Map from files to something (really a vector).
@@ -162,7 +161,7 @@
 //! }
 //! ```
 //!
-//! [`new_index`]: ../../macro.new_index.html (new_index macro)
+//! [`new`]: ../../macro.new.html (new macro)
 //! [`examples` module]: examples/index.html (safe_index examples)
 //! [`examples::clients`]: examples/clients/index.html (clients example)
 //! [clients src]: examples/clients.rs.html (Code of the clients example)
@@ -172,19 +171,19 @@
 ///
 /// See the [module-level documentation](index.html) for more.
 #[macro_export]
-macro_rules! new_index {
+macro_rules! new {
     // Btree set (internal).
     ( @internal $t:ident, $(#[$cmt:meta])? btree set: $set:ident $($tail:tt)* ) => (
         $(#[$cmt])?
         pub type $set = std::collections::BTreeSet<$t> ;
-        $crate::new_index!{ @internal $t $($tail)* }
+        $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Btree map (internal).
     ( @internal $t:ident, $(#[$cmt:meta])? btree map: $map:ident $($tail:tt)* ) => (
         $(#[$cmt])?
         pub type $map<T> = std::collections::BTreeMap<$t, T> ;
-        $crate::new_index!{ @internal $t $($tail)* }
+        $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Range (internal).
@@ -224,7 +223,7 @@ macro_rules! new_index {
                 }
             }
         }
-        $crate::new_index!{ @internal $t $($tail)* }
+        $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Map: vector indexed by `$t` (internal).
@@ -521,7 +520,7 @@ macro_rules! new_index {
                 }
             }
         }
-        $crate::new_index!{ @internal $t $($tail)* }
+        $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Terminal case (internal).
@@ -635,7 +634,7 @@ macro_rules! new_index {
                 self.val.partial_cmp(int)
             }
         }
-        $crate::new_index!{ @internal $t $($tail)* }
+        $crate::new!{ @internal $t $($tail)* }
     ) ;
 }
 
