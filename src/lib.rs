@@ -173,28 +173,28 @@
 #[macro_export]
 macro_rules! new {
     // Btree set (internal).
-    ( @internal $t:ident, $(#[$cmt:meta])? btree set: $set:ident $($tail:tt)* ) => (
-        $(#[$cmt])?
+    ( @internal $t:ident, $(#[$cmt:meta])* btree set: $set:ident $($tail:tt)* ) => (
+        $(#[$cmt])*
         pub type $set = std::collections::BTreeSet<$t> ;
         $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Btree map (internal).
-    ( @internal $t:ident, $(#[$cmt:meta])? btree map: $map:ident $($tail:tt)* ) => (
-        $(#[$cmt])?
+    ( @internal $t:ident, $(#[$cmt:meta])* btree map: $map:ident $($tail:tt)* ) => (
+        $(#[$cmt])*
         pub type $map<T> = std::collections::BTreeMap<$t, T> ;
         $crate::new!{ @internal $t $($tail)* }
     ) ;
 
     // Range (internal).
-    ( @internal $t:ident, $(#[$cmt:meta])? range: $range:ident $($tail:tt)* ) => (
+    ( @internal $t:ident, $(#[$cmt:meta])* range: $range:ident $($tail:tt)* ) => (
         impl $t {
             /// Creates a range between two indexes (upper bound is exclusive).
             pub fn up_to(self, end : $t) -> $range {
                 $range { start: self, end }
             }
         }
-        $(#[$cmt])?
+        $(#[$cmt])*
         #[derive(Debug)]
         pub struct $range {
             start: $t,
@@ -228,11 +228,11 @@ macro_rules! new {
 
     // Map: vector indexed by `$t` (internal).
     (
-        @internal $t:ident, $(#[$cmt:meta])?
+        @internal $t:ident, $(#[$cmt:meta])*
         map: $map:ident with iter: $iter:ident
         $($tail:tt)*
     ) => (
-        $(#[$cmt])?
+        $(#[$cmt])*
         #[derive(Debug, PartialOrd, Ord)]
         pub struct $map<T> {
             vec: Vec<T>
@@ -528,10 +528,10 @@ macro_rules! new {
 
     // Entry point.
     (
-        $(#[$cmt:meta])? $t:ident
+        $(#[$cmt:meta])* $t:ident
         $($tail:tt)*
     ) => (
-        $(#[$cmt])?
+        $(#[$cmt])*
         #[derive(Debug, Clone, Copy, PartialOrd, Ord, PartialEq, Eq, Hash)]
         pub struct $t {
             val: usize
