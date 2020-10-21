@@ -215,7 +215,7 @@ macro_rules! new {
         }
         impl std::iter::Iterator for $range {
             type Item = $t ;
-            fn next(& mut self) -> Option<$t> {
+            fn next(&mut self) -> Option<$t> {
                 if self.start >= self.end { None } else {
                     let res = Some(self.start) ;
                     self.start.val += 1 ;
@@ -262,6 +262,34 @@ macro_rules! new {
                 $map { vec: Vec::with_capacity(capacity) }
             }
 
+            /// Reserves some space for the map.
+            #[inline]
+            pub fn reserve(&mut self, capa: usize) {
+                self.vec.reserve(capa)
+            }
+
+            /// Retrieves an entry in the map.
+            #[inline]
+            pub fn get(&self, uid: $t) -> Option<&T> {
+                self.vec.get(uid.get())
+            }
+            /// Retrieves an entry in the map.
+            #[inline]
+            pub fn get_mut(&mut self, uid: $t) -> Option<&mut T> {
+                self.vec.get_mut(uid.get())
+            }
+
+            /// Retrieves the last entry in the map.
+            #[inline]
+            pub fn last(&self) -> Option<&T> {
+                self.vec.last()
+            }
+            /// Retrieves the last entry in the map.
+            #[inline]
+            pub fn last_mut(&self) -> Option<&T> {
+                self.vec.last()
+            }
+
             /// Number of elements in the map.
             #[inline]
             pub fn len(& self) -> usize {
@@ -287,20 +315,24 @@ macro_rules! new {
 
             /// Pushes an element.
             #[inline]
-            pub fn push(& mut self, elem: T) -> $t {
+            pub fn push(&mut self, elem: T) -> $t {
                 let idx = self.next_index();
                 self.vec.push(elem);
                 idx
             }
             /// Pops an element.
+            ///
+            /// This function is unsafe for the logics of safe indices. This function voids indices
+            /// previously created (indices for the last element on entry) and should be used with
+            /// great care.
             #[inline]
-            pub fn pop(& mut self) -> Option<T> {
+            pub fn pop(&mut self) -> Option<T> {
                 self.vec.pop()
             }
 
             /// Clears a map.
             #[inline]
-            pub fn clear(& mut self) {
+            pub fn clear(&mut self) {
                 self.vec.clear()
             }
 
@@ -311,13 +343,13 @@ macro_rules! new {
             }
             /// Iterates over the elements with the index.
             #[inline]
-            pub fn index_iter<'a>(& 'a self) -> $iter<& 'a $map<T>>
+            pub fn index_iter<'a>(&'a self) -> $iter<&'a $map<T>>
             where T: 'a {
                 $iter::mk_ref(self)
             }
             /// Iterates over the elements with the index, mutable version.
             #[inline]
-            pub fn index_iter_mut<'a>(& 'a mut self) -> $iter<
+            pub fn index_iter_mut<'a>(&'a mut self) -> $iter<
                 std::slice::IterMut<'a, T>
             >
             where T: 'a {
@@ -330,24 +362,46 @@ macro_rules! new {
             }
             /// Iterates over the elements (mutable version).
             #[inline]
-            pub fn iter_mut(& mut self) -> std::slice::IterMut<T> {
+            pub fn iter_mut(&mut self) -> std::slice::IterMut<T> {
                 self.vec.iter_mut()
             }
 
             /// Shrinks the capacity as much as possible.
             #[inline]
-            pub fn shrink_to_fit(& mut self) {
+            pub fn shrink_to_fit(&mut self) {
                 self.vec.shrink_to_fit()
             }
             /// Swap from `Vec`.
             #[inline]
-            pub fn swap(& mut self, a: $t, b: $t) {
+            pub fn swap(&mut self, a: $t, b: $t) {
                 self.vec.swap(* a, *b)
             }
             /// Swap remove from `Vec`.
+            ///
+            /// This function is unsafe for the logics of safe indices. This function voids indices
+            /// previously created (indices for the last element on entry) and should be used with
+            /// great care.
             #[inline]
-            pub fn swap_remove(& mut self, idx: $t) -> T {
+            pub fn swap_remove(&mut self, idx: $t) -> T {
                 self.vec.swap_remove(* idx)
+            }
+
+            /// Splits the map into the elements before and after some index.
+            ///
+            /// More precisely, returns a tuple of
+            ///
+            /// - an iterator over the elements *before* `idx`,
+            /// - the element at position `idx`, and
+            /// - an iterator over the elements *after* `idx`.
+            #[inline]
+            pub fn split(&self, idx: $t) -> (impl Iterator<Item = &T>, &T, impl Iterator<Item = &T>) {
+                let before = self.vec[0..idx.val].iter();
+                let after = if idx.val < self.vec.len() {
+                    self.vec[idx.val + 1 ..].iter()
+                } else {
+                    self.vec[0..0].iter()
+                };
+                (before, &self.vec[idx.val], after)
             }
         }
 
@@ -378,15 +432,15 @@ macro_rules! new {
                 self.vec.into_iter()
             }
         }
-        impl<'a, T> std::iter::IntoIterator for & 'a $map<T> {
-            type Item = & 'a T ;
+        impl<'a, T> std::iter::IntoIterator for &'a $map<T> {
+            type Item = &'a T ;
             type IntoIter = std::slice::Iter<'a, T> ;
             fn into_iter(self) -> std::slice::Iter<'a, T> {
                 self.iter()
             }
         }
-        impl<'a, T> std::iter::IntoIterator for & 'a mut $map<T> {
-            type Item = & 'a mut T ;
+        impl<'a, T> std::iter::IntoIterator for &'a mut $map<T> {
+            type Item = &'a mut T ;
             type IntoIter = std::slice::IterMut<'a, T> ;
             fn into_iter(self) -> std::slice::IterMut<'a, T> {
                 self.iter_mut()
@@ -405,9 +459,48 @@ macro_rules! new {
                 & self.vec[ index.get() ]
             }
         }
+        impl<T> std::ops::Index<std::ops::RangeFrom<$t>> for $map<T> {
+            type Output = [T];
+            fn index(& self, std::ops::RangeFrom { start }: std::ops::RangeFrom<$t>) -> &[T] {
+                & self.vec[ start.get() .. ]
+            }
+        }
+        impl<T> std::ops::Index<std::ops::Range<$t>> for $map<T> {
+            type Output = [T];
+            fn index(& self, std::ops::Range { start, end }: std::ops::Range<$t>) -> &[T] {
+                & self.vec[ start.get() .. end.get() ]
+            }
+        }
+        impl<T> std::ops::Index<std::ops::RangeInclusive<$t>> for $map<T> {
+            type Output = [T];
+            fn index(& self, range: std::ops::RangeInclusive<$t>) -> &[T] {
+                & self.vec[ range.start().get() ..= range.end().get() ]
+            }
+        }
+        impl<T> std::ops::Index<std::ops::RangeFull> for $map<T> {
+            type Output = [T];
+            fn index(& self, _: std::ops::RangeFull) -> &[T] {
+                & self.vec[..]
+            }
+        }
+        impl<T> std::ops::Index<std::ops::RangeTo<$t>> for $map<T> {
+            type Output = [T];
+            fn index(& self, std::ops::RangeTo { end }: std::ops::RangeTo<$t>) -> &[T] {
+                & self.vec[..end.get()]
+            }
+        }
+        impl<T> std::ops::Index<std::ops::RangeToInclusive<$t>> for $map<T> {
+            type Output = [T];
+            fn index(
+                & self,
+                std::ops::RangeToInclusive { end }: std::ops::RangeToInclusive<$t>
+            ) -> &[T] {
+                & self.vec[..=end.get()]
+            }
+        }
         impl<T> std::ops::IndexMut<$t> for $map<T> {
-            fn index_mut(& mut self, index: $t) -> & mut T {
-                & mut self.vec[ index.get() ]
+            fn index_mut(&mut self, index: $t) -> &mut T {
+                &mut self.vec[ index.get() ]
             }
         }
         impl<T> std::ops::Index<
@@ -463,15 +556,15 @@ macro_rules! new {
             cursor: $t,
             map: T,
         }
-        impl<'a, T> $iter<& 'a $map<T>> {
+        impl<'a, T> $iter<&'a $map<T>> {
             /// Creates an iterator starting at 0.
-            fn mk_ref(map: & 'a $map<T>) -> Self {
+            fn mk_ref(map: &'a $map<T>) -> Self {
                 $iter { cursor: $t::zero(), map: map }
             }
         }
-        impl<'a, T: 'a> std::iter::Iterator for $iter<& 'a $map<T>> {
-            type Item = ($t, & 'a T) ;
-            fn next(& mut self) -> Option< ($t, & 'a T) > {
+        impl<'a, T: 'a> std::iter::Iterator for $iter<&'a $map<T>> {
+            type Item = ($t, &'a T) ;
+            fn next(&mut self) -> Option< ($t, &'a T) > {
                 if self.cursor >= self.map.len() {
                     None
                 } else {
@@ -483,15 +576,15 @@ macro_rules! new {
         }
         impl<'a, T: 'a> $iter<std::slice::IterMut<'a, T>> {
             /// Creates an iterator starting at 0, mutable version.
-            fn mk_ref_mut(map: & 'a mut $map<T>) -> Self {
+            fn mk_ref_mut(map: &'a mut $map<T>) -> Self {
                 $iter { cursor: $t::zero(), map: map.vec.iter_mut() }
             }
         }
         impl<'a, T: 'a> std::iter::Iterator for $iter<
             std::slice::IterMut<'a, T>
         > {
-            type Item = ($t, & 'a mut T) ;
-            fn next(& mut self) -> Option< ($t, & 'a mut T) > {
+            type Item = ($t, &'a mut T) ;
+            fn next(&mut self) -> Option< ($t, &'a mut T) > {
                 self.map.next().map(
                     |res| {
                         let index = self.cursor ;
@@ -510,7 +603,7 @@ macro_rules! new {
         }
         impl<T> std::iter::Iterator for $iter<$map<T>> {
             type Item = ($t, T) ;
-            fn next(& mut self) -> Option< ($t, T) > {
+            fn next(&mut self) -> Option< ($t, T) > {
                 if let Some(elem) = self.map.pop() {
                     let res = (self.cursor, elem) ;
                     self.cursor.inc() ;
@@ -560,12 +653,12 @@ macro_rules! new {
             }
             /// Increments the int.
             #[inline]
-            pub fn inc(& mut self) {
+            pub fn inc(&mut self) {
                 self.val += 1
             }
             /// Decrements the int.
             #[inline]
-            pub fn dec(& mut self) {
+            pub fn dec(&mut self) {
                 self.val -= 1
             }
         }
@@ -575,9 +668,9 @@ macro_rules! new {
                 $t::new(val)
             }
         }
-        impl<'a> std::convert::From<& 'a usize> for $t {
+        impl<'a> std::convert::From<&'a usize> for $t {
             #[inline]
-            fn from(val: & 'a usize) -> Self {
+            fn from(val: &'a usize) -> Self {
                 $t::new(* val)
             }
         }
@@ -587,7 +680,7 @@ macro_rules! new {
                 self.val
             }
         }
-        impl<'a> std::convert::Into<usize> for & 'a $t {
+        impl<'a> std::convert::Into<usize> for &'a $t {
             #[inline]
             fn into(self) -> usize {
                 self.val
@@ -595,7 +688,7 @@ macro_rules! new {
         }
         impl<T: std::convert::Into<usize>> std::ops::AddAssign<T> for $t {
             #[inline]
-            fn add_assign(& mut self, rhs: T) {
+            fn add_assign(&mut self, rhs: T) {
                 self.val += rhs.into()
             }
         }
@@ -616,7 +709,7 @@ macro_rules! new {
         }
         impl std::fmt::Display for $t {
             #[inline]
-            fn fmt(& self, fmt: & mut std::fmt::Formatter) -> std::fmt::Result {
+            fn fmt(& self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
                 write!(fmt, "{}", self.val)
             }
         }
