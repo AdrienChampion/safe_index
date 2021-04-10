@@ -9,7 +9,7 @@
 //! The index type created implements
 //!
 //! - `Deref` and `From` for `usize`,
-//! - `Debug`, `Clone`, `Copy`, `PartialOrd`, `Ord`, `PartialEq`, `Eq`, `Hash` and `Display`.
+//! - `Debug`, `Default`, `Clone`, `Copy`, `PartialOrd`, `Ord`, `PartialEq`, `Eq`, `Hash` and `Display`.
 //!
 //! # Usage
 //!
@@ -698,6 +698,12 @@ macro_rules! new {
             fn add(mut self, rhs: T) -> $t {
                 self.val += rhs.into() ;
                 self
+            }
+        }
+        impl Default for $t {
+            #[inline]
+            fn default() -> Self {
+                Self::zero()
             }
         }
         impl std::ops::Deref for $t {
