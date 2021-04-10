@@ -1,4 +1,8 @@
-# v0.9.5
+# v0.9.9
+
+- indices now implement `Default` [#1](https://github.com/AdrienChampion/safe_index/issues/1)
+
+# v0.9.6
 
 - maps (vectors) now
     - implement `Index` for the various `std::ops::Range`s
