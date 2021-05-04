@@ -1,3 +1,9 @@
+# v0.9.11
+
+- `const` map constructors
+- `const` map-iter constructors
+- `const` index constructors and accessor
+
 # v0.9.9
 
 - indices now implement `Default` [#1](https://github.com/AdrienChampion/safe_index/issues/1)
