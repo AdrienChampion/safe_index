@@ -248,12 +248,12 @@ macro_rules! new {
         impl<T> $map<T> {
             /// Creates an empty map from an existing one.
             #[inline]
-            pub fn of(vec: Vec<T>) -> Self {
+            pub const fn of(vec: Vec<T>) -> Self {
                 $map { vec: vec }
             }
             /// Creates an empty map.
             #[inline]
-            pub fn new() -> Self {
+            pub const fn new() -> Self {
                 $map { vec: Vec::new() }
             }
             /// Creates an empty map with some capacity.
@@ -558,7 +558,7 @@ macro_rules! new {
         }
         impl<'a, T> $iter<&'a $map<T>> {
             /// Creates an iterator starting at 0.
-            fn mk_ref(map: &'a $map<T>) -> Self {
+            const fn mk_ref(map: &'a $map<T>) -> Self {
                 $iter { cursor: $t::zero(), map: map }
             }
         }
@@ -633,22 +633,22 @@ macro_rules! new {
         impl $t {
             /// Wraps an int.
             #[inline]
-            pub fn new(val: usize) -> Self {
+            pub const fn new(val: usize) -> Self {
                 $t { val: val }
             }
             /// Zero.
             #[inline]
-            pub fn zero() -> Self {
+            pub const fn zero() -> Self {
                 $t { val: 0 }
             }
             /// One.
             #[inline]
-            pub fn one() -> Self {
+            pub const fn one() -> Self {
                 $t { val: 1 }
             }
             /// Accessor.
             #[inline]
-            pub fn get(& self) -> usize {
+            pub const fn get(& self) -> usize {
                 self.val
             }
             /// Increments the int.
