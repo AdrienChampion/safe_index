@@ -30,8 +30,7 @@
 //! - `range <Range>`: creates an iterator named `<Range>` between two `Idx`s (the upper bound is
 //!   exclusive). If this constructor is present, `Idx` will have a `up_to` function that creates a
 //!   range between two `Idx`s. This constructor can only appear once.
-//! - `map <Map> with iter: <MapIter>`: creates a wrapper named `<Map>` around a vector, indexed by
-//!   `Idx`. `<MapIter>` is the type of iterators over `<Map>`.
+//! - `map <Map>`: creates a wrapper named `<Map>` around a vector, indexed by `Idx`.
 //! - `btree set <Set>`: alias type for a binary tree set of `Idx`s.
 //! - `btree map <Map>`: alias type for a binary tree map from `Idx` to something.
 //!
@@ -83,7 +82,7 @@
 //!         /// Indices of clients.
 //!         Client,
 //!         /// Map from clients to something (really a vector).
-//!         map: Clients with iter: ClientIter,
+//!         map: Clients,
 //!         /// Set of clients.
 //!         btree set: ClientSet,
 //!     }
@@ -92,7 +91,7 @@
 //!         /// Indices of files.
 //!         File,
 //!         /// Map from files to something (really a vector).
-//!         map: Files with iter: FileIter,
+//!         map: Files,
 //!         /// Set of files.
 //!         btree set: FileSet,
 //!     }
@@ -288,6 +287,21 @@ macro_rules! handle {
         $crate::map_codegen! { $t, $(#[$meta])* $($tail)* }
     };
     { $t:ident $(,)? } => {};
+
+    { $t:ident with iter: $iter:ident $($tail:tt)* } => {
+        compile_error!(concat!(
+            "maps do not have dedicated iterator structures anymore, remove `with iter: ",
+            stringify!($iter),
+            "` from your input",
+        ));
+    };
+    { $t:ident $token:tt $($tail:tt)* } => {
+        compile_error!(concat!(
+            "expected `btree set`, `btree map`, `range` or `map`, found unexpected token `",
+            stringify!($token),
+            "`",
+        ));
+    };
 }
 
 /// Wraps a `usize` into a struct (zero-cost). Also generates the relevant collections indexed by

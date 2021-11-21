@@ -15,7 +15,7 @@
 ///     /// Map of variable indexes.
 ///     btree map: VarBMap,
 ///     /// Vector indexed by variable indexes.
-///     map: VarMap with iter: VarMapIter,
+///     map: VarMap,
 /// }
 /// fn main() {
 ///     use std::mem::size_of;
@@ -65,7 +65,7 @@ pub mod basic {
         /// Map of variable indexes.
         btree map: VarBMap,
         /// Vector indexed by variable indexes.
-        map: VarMap with iter: VarMapIter,
+        map: VarMap,
     }
 
     #[test]

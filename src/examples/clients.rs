@@ -54,7 +54,7 @@ pub mod idx {
         /// Indices of clients.
         Client,
         /// Map from clients to something.
-        map: Clients with iter: ClientIter,
+        map: Clients,
         /// Set of clients.
         btree set: ClientSet,
     }
@@ -63,7 +63,7 @@ pub mod idx {
         /// Indices of files.
         File,
         /// Map from files to something.
-        map: Files with iter: FileIter,
+        map: Files,
         /// Set of files.
         btree set: FileSet,
     }

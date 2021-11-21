@@ -6,7 +6,7 @@
 macro_rules! map_codegen {
     ($t:ident,
         $(#[$meta:meta])*
-        $map:ident with iter: $iter:ident
+        $map:ident
         $($tail:tt)*
     ) => {
         $(#[$meta])*
@@ -140,30 +140,36 @@ macro_rules! map_codegen {
             }
             /// Ref-iterator over the index/element pairs.
             #[inline]
-            pub fn index_iter<'a>(&'a self) -> $iter<&'a $map<T>>
+            pub fn index_iter<'a>(&'a self) ->
+                impl Iterator<Item = ($t, &'a T)>
+                + DoubleEndedIterator
+                + ExactSizeIterator
             where T: 'a {
-                $iter::mk_ref(self)
+                self.vec.iter().enumerate().map(|(idx, elm)| (
+                    $t { val: idx }, elm
+                ))
             }
-            // /// Ref-iterator over the index/element pairs.
-            // #[inline]
-            // pub fn nu_index_iter<'a>(&'a self) -> impl Iterator<Item = ($t, &'a T)>
-            // where T: 'a {
-            //     self.vec.iter().enumerate().map(|(idx, elm)| (
-            //         $t { val: idx }, elm
-            //     ))
-            // }
             /// Ref-mut-iterator over the index/element pairs.
             #[inline]
-            pub fn index_iter_mut<'a>(&'a mut self) -> $iter<
-                std::slice::IterMut<'a, T>
-            >
+            pub fn index_iter_mut<'a>(&'a mut self) ->
+                impl Iterator<Item = ($t, &'a mut T)>
+                + DoubleEndedIterator
+                + ExactSizeIterator
             where T: 'a {
-                $iter::mk_ref_mut(self)
+                self.vec.iter_mut().enumerate().map(|(idx, elm)| (
+                    $t { val: idx }, elm
+                ))
             }
             /// Own-iterator over the index/element pairs.
             #[inline]
-            pub fn into_index_iter(self) -> $iter<$map<T>> {
-                $iter::new(self)
+            pub fn into_index_iter(self) ->
+                impl Iterator<Item = ($t, T)>
+                + DoubleEndedIterator
+                + ExactSizeIterator
+            {
+                self.vec.into_iter().enumerate().map(|(idx, elm)| (
+                    $t { val: idx }, elm
+                ))
             }
             /// Ref-mut-iterator over the elements.
             #[inline]
@@ -351,70 +357,6 @@ macro_rules! map_codegen {
             }
         }
 
-        /// Structure allowing to iterate over the elements of a map and their
-        /// index.
-        #[derive(Clone)]
-        pub struct $iter<T> {
-            cursor: $t,
-            map: T,
-        }
-        impl<'a, T> $iter<&'a $map<T>> {
-            /// Creates an iterator starting at 0.
-            const fn mk_ref(map: &'a $map<T>) -> Self {
-                $iter { cursor: $t { val: 0 }, map: map }
-            }
-        }
-        impl<'a, T: 'a> std::iter::Iterator for $iter<&'a $map<T>> {
-            type Item = ($t, &'a T) ;
-            fn next(&mut self) -> Option< ($t, &'a T) > {
-                if self.cursor >= self.map.len() {
-                    None
-                } else {
-                    let res = (self.cursor, & self.map[self.cursor]) ;
-                    self.cursor.val += 1 ;
-                    Some(res)
-                }
-            }
-        }
-        impl<'a, T: 'a> $iter<std::slice::IterMut<'a, T>> {
-            /// Creates an iterator starting at 0, mutable version.
-            fn mk_ref_mut(map: &'a mut $map<T>) -> Self {
-                $iter { cursor: $t { val: 0 }, map: map.vec.iter_mut() }
-            }
-        }
-        impl<'a, T: 'a> std::iter::Iterator for $iter<
-            std::slice::IterMut<'a, T>
-        > {
-            type Item = ($t, &'a mut T) ;
-            fn next(&mut self) -> Option< ($t, &'a mut T) > {
-                self.map.next().map(
-                    |res| {
-                        let index = self.cursor ;
-                        self.cursor.val += 1 ;
-                        (index, res)
-                    }
-                )
-            }
-        }
-        impl<T> $iter<$map<T>> {
-            /// Creates an iterator starting at 0.
-            fn new(mut map: $map<T>) -> Self {
-                map.vec.reverse() ;
-                $iter { cursor: $t { val: 0 }, map: map }
-            }
-        }
-        impl<T> std::iter::Iterator for $iter<$map<T>> {
-            type Item = ($t, T) ;
-            fn next(&mut self) -> Option< ($t, T) > {
-                if let Some(elem) = self.map.vec.pop() {
-                    let res = (self.cursor, elem) ;
-                    self.cursor.val += 1 ;
-                    Some(res)
-                } else {
-                    None
-                }
-            }
-        }
         $crate::handle!{ $t $($tail)* }
     };
 }

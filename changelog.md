@@ -1,6 +1,9 @@
 # v0.9.17
 
+- macro input
+    - `map MapType` is not followed by `with iter IterType` anymore
 - maps:
+    - no dedicated iterator type anymore
     - function `of` constructing a map from a vector is gone, use the `From` implementation
         instead;
     - `last` now also returns the index of the last element, if any;
