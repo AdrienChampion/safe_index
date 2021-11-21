@@ -44,7 +44,7 @@
 ///     }
 ///
 ///     let mut check = vec![11, 3, 7];
-///     for idx in v_0.up_to( var_values.next_index() ) {
+///     for idx in var_values.indices() {
 ///         assert_eq! { var_values[idx], check.pop().unwrap() }
 ///     }
 ///
@@ -52,11 +52,6 @@
 ///     assert_eq! { var_values[v_0], 11 }
 ///     assert_eq! { var_values[v_1], 3  }
 ///     assert_eq! { var_values[v_2], 7  }
-///
-///     let val = var_values.swap_remove(v_0);
-///     assert_eq! { var_values[v_0], 7 }
-///     assert_eq! { var_values[v_1], 3  }
-///     assert_eq! { val, 11  }
 /// }
 /// ```
 pub mod basic {
@@ -101,7 +96,7 @@ pub mod basic {
         }
 
         let mut check = vec![11, 3, 7];
-        for idx in v_0.up_to(var_values.next_index()) {
+        for idx in var_values.indices() {
             assert_eq! { var_values[idx], check.pop().unwrap() }
         }
 
@@ -109,11 +104,6 @@ pub mod basic {
         assert_eq! { var_values[v_0], 11 }
         assert_eq! { var_values[v_1], 3  }
         assert_eq! { var_values[v_2], 7  }
-
-        let val = var_values.swap_remove(v_0);
-        assert_eq! { var_values[v_0], 7 }
-        assert_eq! { var_values[v_1], 3  }
-        assert_eq! { val, 11  }
     }
 }
 

@@ -1,3 +1,14 @@
+# v0.9.17
+
+- maps:
+    - function `of` constructing a map from a vector is gone, use the `From` implementation
+        instead;
+    - `last` now also returns the index of the last element, if any;
+    - `last_mut` has been fixed and also returns the last element's index;
+    - new `push_idx` function: like `push`, but takes an element constructor taking the element's
+        index as argument;
+    - added implementation of `std::ops::Index<std::ops::RangeToInclusive<usize>>`
+
 # v0.9.11
 
 - `const` map constructors

@@ -12,4 +12,8 @@ keywords = ["type-safety", "indexing"]
 license = "MIT"
 edition = "2018"
 
+[features]
+default = [ "strict" ]
+strict = []
+
 [dependencies]

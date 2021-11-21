@@ -140,13 +140,12 @@ impl Data {
 
     /// Adds a file, updates the clients concerned.
     pub fn add_file(&mut self, file: FileInfo) -> File {
-        let idx = self.files.next_index();
+        let idx = self.files.push(file);
+        let file = &self.files[idx];
         for client in &file.clients {
             let is_new = self.clients[*client].files.insert(idx);
             debug_assert! { is_new }
         }
-        let nu_idx = self.files.push(file);
-        debug_assert_eq! { idx, nu_idx }
         idx
     }
 
