@@ -1,3 +1,25 @@
+# v0.9.17
+
+- new `strict` feature, off by default; when active
+    - removes all bridges from `usize` to indices
+    - removes functions over maps that decrease their size
+    - this means that, as long as you only create one map value, any index you manipulate is
+        guaranteed to be legal for this map.
+- safe_index is no `no_std`
+- macro input
+    - `map MapType` is not followed by `with iter IterType` anymore
+    - `range RangeType` has been removed, use `..` and `..=` operators instead
+- maps:
+    - no dedicated iterator type anymore
+    - function `of` constructing a map from a vector is gone, use the `From` implementation
+        instead;
+    - `last` now also returns the index of the last element, if any;
+    - `last_mut` has been fixed and also returns the last element's index;
+    - new `push_idx` function: like `push`, but takes an element constructor taking the element's
+        index as argument;
+    - `split` now produces iterators that yield indices
+    - added implementation of `std::ops::Index<std::ops::RangeToInclusive<usize>>`
+
 # v0.9.11
 
 - `const` map constructors

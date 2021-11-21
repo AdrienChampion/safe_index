@@ -2,25 +2,22 @@
 //!
 //! Do not use the types in this module.
 
-/// Example of zero-cost wrapping. **Do not use this.**
+/// A basic example.
 ///
 /// ```
 /// safe_index::new!{
 ///     /// Index of a variable.
 ///     VarIndex,
-///     /// Range over `VarIndex`.
-///     range: VarRange,
 ///     /// Set of variable indexes.
 ///     btree set: VarBSet,
 ///     /// Map of variable indexes.
 ///     btree map: VarBMap,
 ///     /// Vector indexed by variable indexes.
-///     map: VarMap with iter: VarMapIter,
+///     map: VarMap,
 /// }
 /// fn main() {
 ///     use std::mem::size_of;
 ///     assert_eq!( size_of::<VarIndex>(), size_of::<usize>() );
-///     assert_eq!( size_of::<VarRange>(), 2 * size_of::<usize>() );
 ///     assert_eq!( size_of::<VarMap<String>>(), size_of::<Vec<String>>() );
 ///
 ///     let mut var_values = VarMap::with_capacity(3);
@@ -30,6 +27,26 @@
 ///     assert_eq! { var_values[v_0], 7  }
 ///     assert_eq! { var_values[v_1], 3  }
 ///     assert_eq! { var_values[v_2], 11 }
+///
+///     let mut iter = var_values[v_0..v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[v_0..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
 ///
 ///     let mut check = vec![11, 3, 7];
 ///     for val in &var_values {
@@ -44,7 +61,7 @@
 ///     }
 ///
 ///     let mut check = vec![11, 3, 7];
-///     for idx in v_0.up_to( var_values.next_index() ) {
+///     for idx in var_values.indices() {
 ///         assert_eq! { var_values[idx], check.pop().unwrap() }
 ///     }
 ///
@@ -52,33 +69,28 @@
 ///     assert_eq! { var_values[v_0], 11 }
 ///     assert_eq! { var_values[v_1], 3  }
 ///     assert_eq! { var_values[v_2], 7  }
-///
-///     let val = var_values.swap_remove(v_0);
-///     assert_eq! { var_values[v_0], 7 }
-///     assert_eq! { var_values[v_1], 3  }
-///     assert_eq! { val, 11  }
 /// }
 /// ```
 pub mod basic {
     new! {
         /// Index of a variable.
         VarIndex,
-        /// Range over `VarIndex`.
-        range: VarRange,
         /// Set of variable indexes.
         btree set: VarBSet,
         /// Map of variable indexes.
         btree map: VarBMap,
         /// Vector indexed by variable indexes.
-        map: VarMap with iter: VarMapIter,
+        map: VarMap,
     }
 
     #[test]
     fn run() {
-        use std::mem::size_of;
+        use core::mem::size_of;
         assert_eq!(size_of::<VarIndex>(), size_of::<usize>());
-        assert_eq!(size_of::<VarRange>(), 2 * size_of::<usize>());
-        assert_eq!(size_of::<VarMap<String>>(), size_of::<Vec<String>>());
+        assert_eq!(
+            size_of::<VarMap<alloc::string::String>>(),
+            size_of::<alloc::vec::Vec<alloc::string::String>>()
+        );
 
         let mut var_values = VarMap::with_capacity(3);
         let v_0 = var_values.push(7);
@@ -88,20 +100,40 @@ pub mod basic {
         assert_eq! { var_values[v_1], 3  }
         assert_eq! { var_values[v_2], 11 }
 
-        let mut check = vec![11, 3, 7];
+        let mut iter = var_values[v_0..v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[v_0..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
+
+        let mut check = alloc::vec![11, 3, 7];
         for val in &var_values {
             assert_eq! { *val, check.pop().unwrap() }
         }
 
-        let mut check = vec![(v_2, 11), (v_1, 3), (v_0, 7)];
+        let mut check = alloc::vec![(v_2, 11), (v_1, 3), (v_0, 7)];
         for (idx, val) in var_values.index_iter() {
             let (i, v) = check.pop().unwrap();
             assert_eq! {  idx, i }
             assert_eq! { *val, v }
         }
 
-        let mut check = vec![11, 3, 7];
-        for idx in v_0.up_to(var_values.next_index()) {
+        let mut check = alloc::vec![11, 3, 7];
+        for idx in var_values.indices() {
             assert_eq! { var_values[idx], check.pop().unwrap() }
         }
 
@@ -109,11 +141,6 @@ pub mod basic {
         assert_eq! { var_values[v_0], 11 }
         assert_eq! { var_values[v_1], 3  }
         assert_eq! { var_values[v_2], 7  }
-
-        let val = var_values.swap_remove(v_0);
-        assert_eq! { var_values[v_0], 7 }
-        assert_eq! { var_values[v_1], 3  }
-        assert_eq! { val, 11  }
     }
 }
 

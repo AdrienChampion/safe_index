@@ -54,7 +54,7 @@ pub mod idx {
         /// Indices of clients.
         Client,
         /// Map from clients to something.
-        map: Clients with iter: ClientIter,
+        map: Clients,
         /// Set of clients.
         btree set: ClientSet,
     }
@@ -63,7 +63,7 @@ pub mod idx {
         /// Indices of files.
         File,
         /// Map from files to something.
-        map: Files with iter: FileIter,
+        map: Files,
         /// Set of files.
         btree set: FileSet,
     }
@@ -74,14 +74,14 @@ use idx::*;
 /// Client information.
 pub struct ClientInfo {
     /// Name of the client.
-    pub name: String,
+    pub name: alloc::string::String,
     /// Files associated with the client.
     pub files: FileSet,
 }
 /// File information.
 pub struct FileInfo {
     /// Name of the file.
-    pub name: String,
+    pub name: alloc::string::String,
     /// Clients concerned by the file.
     pub clients: ClientSet,
 }
@@ -89,8 +89,8 @@ impl FileInfo {
     /// Constructor.
     pub fn new<S, I>(name: S, clients: I) -> Self
     where
-        S: Into<String>,
-        I: std::iter::IntoIterator<Item = Client>,
+        S: Into<alloc::string::String>,
+        I: core::iter::IntoIterator<Item = Client>,
     {
         FileInfo {
             name: name.into(),
@@ -99,7 +99,7 @@ impl FileInfo {
     }
 }
 
-impl std::ops::Index<Client> for Data {
+impl core::ops::Index<Client> for Data {
     type Output = ClientInfo;
     fn index(&self, client: Client) -> &ClientInfo {
         &self.clients[client]
@@ -125,7 +125,7 @@ impl Data {
     /// Adds a client.
     ///
     /// Does not add the client again if it's already there (by name).
-    pub fn add_client<S: Into<String>>(&mut self, name: S) -> Client {
+    pub fn add_client<S: Into<alloc::string::String>>(&mut self, name: S) -> Client {
         let name = name.into();
         for (client, info) in self.clients.index_iter() {
             if info.name == name {
@@ -140,13 +140,12 @@ impl Data {
 
     /// Adds a file, updates the clients concerned.
     pub fn add_file(&mut self, file: FileInfo) -> File {
-        let idx = self.files.next_index();
+        let idx = self.files.push(file);
+        let file = &self.files[idx];
         for client in &file.clients {
             let is_new = self.clients[*client].files.insert(idx);
             debug_assert! { is_new }
         }
-        let nu_idx = self.files.push(file);
-        debug_assert_eq! { idx, nu_idx }
         idx
     }
 
@@ -167,8 +166,8 @@ impl Data {
     ///
     /// Two clients are in the same equivalence class if they are associated to the same file,
     /// transitively.
-    pub fn client_clusters(&self) -> Vec<(ClientSet, FileSet)> {
-        let mut res: Vec<(ClientSet, FileSet)> = vec![];
+    pub fn client_clusters(&self) -> alloc::vec::Vec<(ClientSet, FileSet)> {
+        let mut res: alloc::vec::Vec<(ClientSet, FileSet)> = alloc::vec![];
         macro_rules! is_known {
             ($file:expr) => {
                 res.iter().any(|(_, files)| files.contains(&$file))
@@ -183,7 +182,7 @@ impl Data {
             let (mut clients, mut files) = (ClientSet::new(), FileSet::new());
             files.insert(file);
 
-            let mut to_dos = vec![&file_info.clients];
+            let mut to_dos = alloc::vec![&file_info.clients];
 
             while let Some(to_do) = to_dos.pop() {
                 for client in to_do {
@@ -214,24 +213,24 @@ fn run() {
     let c_3 = data.add_client("client 3");
     let c_4 = data.add_client("client 4");
 
-    let f_1 = data.add_file(FileInfo::new("file 1", vec![c_1, c_2]));
-    let f_2 = data.add_file(FileInfo::new("file 2", vec![c_3]));
-    let f_3 = data.add_file(FileInfo::new("file 3", vec![c_2]));
-    let f_4 = data.add_file(FileInfo::new("file 4", vec![c_4]));
+    let f_1 = data.add_file(FileInfo::new("file 1", alloc::vec![c_1, c_2]));
+    let f_2 = data.add_file(FileInfo::new("file 2", alloc::vec![c_3]));
+    let f_3 = data.add_file(FileInfo::new("file 3", alloc::vec![c_2]));
+    let f_4 = data.add_file(FileInfo::new("file 4", alloc::vec![c_4]));
 
     let classes = data.client_clusters();
-    let expected: Vec<(ClientSet, FileSet)> = vec![
+    let expected: alloc::vec::Vec<(ClientSet, FileSet)> = alloc::vec![
         (
-            vec![c_1, c_2].into_iter().collect(),
-            vec![f_1, f_3].into_iter().collect(),
+            alloc::vec![c_1, c_2].into_iter().collect(),
+            alloc::vec![f_1, f_3].into_iter().collect(),
         ),
         (
-            vec![c_3].into_iter().collect(),
-            vec![f_2].into_iter().collect(),
+            alloc::vec![c_3].into_iter().collect(),
+            alloc::vec![f_2].into_iter().collect(),
         ),
         (
-            vec![c_4].into_iter().collect(),
-            vec![f_4].into_iter().collect(),
+            alloc::vec![c_4].into_iter().collect(),
+            alloc::vec![f_4].into_iter().collect(),
         ),
     ];
     assert_eq! { classes, expected }
@@ -239,14 +238,14 @@ fn run() {
     data.add_client_to_file(c_3, f_3);
 
     let classes = data.client_clusters();
-    let expected: Vec<(ClientSet, FileSet)> = vec![
+    let expected: alloc::vec::Vec<(ClientSet, FileSet)> = alloc::vec![
         (
-            vec![c_1, c_2, c_3].into_iter().collect(),
-            vec![f_1, f_2, f_3].into_iter().collect(),
+            alloc::vec![c_1, c_2, c_3].into_iter().collect(),
+            alloc::vec![f_1, f_2, f_3].into_iter().collect(),
         ),
         (
-            vec![c_4].into_iter().collect(),
-            vec![f_4].into_iter().collect(),
+            alloc::vec![c_4].into_iter().collect(),
+            alloc::vec![f_4].into_iter().collect(),
         ),
     ];
     assert_eq! { classes, expected }

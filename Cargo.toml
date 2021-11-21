@@ -1,15 +1,19 @@
 [package]
 name = "safe_index"
-version = "0.9.11"
+version = "0.9.17"
 authors = ["Adrien Champion <adrien.champion@email.com>"]
 description = "Type-safe indexes."
 documentation = "https://docs.rs/safe_index"
 homepage = "https://github.com/AdrienChampion/safe_index"
 repository = "https://github.com/AdrienChampion/safe_index"
 readme = "README.md"
-categories = ["development-tools", "data-structures"]
-keywords = ["type-safety", "indexing"]
+categories = ["development-tools", "data-structures", "no-std"]
+keywords = ["type-safety", "indexing", "no-std", "nostd"]
 license = "MIT"
 edition = "2018"
+
+[features]
+# default = [ "strict" ]
+strict = []
 
 [dependencies]
