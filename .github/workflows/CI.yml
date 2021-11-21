@@ -23,3 +23,11 @@ jobs:
       run: cargo build --release --verbose
     - name: Release Tests
       run: cargo test --release --verbose
+    - name: Build (strict)
+      run: cargo build --features = "strict" --verbose
+    - name: Debug Tests (strict)
+      run: cargo test --features = "strict" --verbose
+    - name: Build release (strict)
+      run: cargo build --features = "strict" --release --verbose
+    - name: Release Tests (strict)
+      run: cargo test --features = "strict" --release --verbose
