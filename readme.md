@@ -12,4 +12,8 @@ Index-type creation is done through a macro, so the type actually belong to the 
 
 See the [documentation] for details.
 
+If you are experiencing problems upgrading from a version `< 0.9.17`, make sure you read the
+[changelog][changelog 0.9.17].
+
 [documentation]: https://docs.rs/safe_index (safe_index's documentation)
+[changelog 0.9.17]: https://github.com/AdrienChampion/safe_index/blob/master/changelog.md#v0917

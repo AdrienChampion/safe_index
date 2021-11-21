@@ -11,6 +11,9 @@
 //! - `Deref` and `From` for `usize`,
 //! - `Debug`, `Default`, `Clone`, `Copy`, `PartialOrd`, `Ord`, `PartialEq`, `Eq`, `Hash` and `Display`.
 //!
+//! If you are experiencing problems upgrading from a version `< 0.9.17`, make sure you read the
+//! [changelog][changelog 0.9.17].
+//!
 //! # Usage
 //!
 //! The most basic use of `new` is just to wrap something:
@@ -160,6 +163,7 @@
 //! [`examples` module]: examples/index.html (safe_index examples)
 //! [`examples::clients`]: examples/clients/index.html (clients example)
 //! [clients src]: examples/clients.rs.html (Code of the clients example)
+//! [changelog 0.9.17]: https://github.com/AdrienChampion/safe_index/blob/master/changelog.md#v0917
 
 #![no_std]
 
