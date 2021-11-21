@@ -1,5 +1,10 @@
 # v0.9.17
 
+- new `strict` feature, off by default; when active
+    - removes all bridges from `usize` to indices
+    - removes functions over maps that decrease their size
+    - this means that, as long as you only create one map value, any index you manipulate is
+        guaranteed to be legal for this map.
 - safe_index is no `no_std`
 - macro input
     - `map MapType` is not followed by `with iter IterType` anymore

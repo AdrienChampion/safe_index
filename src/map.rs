@@ -361,8 +361,8 @@ macro_rules! map_codegen {
                 }
             }
             impl<T> core::ops::Deref for $map<T> {
-                type Target = Vec<T> ;
-                fn deref(& self) -> & Vec<T> {
+                type Target = $crate::alloc::vec::Vec<T> ;
+                fn deref(& self) -> & $crate::alloc::vec::Vec<T> {
                     & self.vec
                 }
             }

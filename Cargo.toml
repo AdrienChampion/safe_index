@@ -13,7 +13,7 @@ license = "MIT"
 edition = "2018"
 
 [features]
-default = [ "strict" ]
+# default = [ "strict" ]
 strict = []
 
 [dependencies]
