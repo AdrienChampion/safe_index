@@ -127,9 +127,14 @@ macro_rules! map_codegen {
                 }
             }
 
+            /// Range of the map.
+            #[inline]
+            pub fn range(&self) -> std::ops::RangeInclusive<$t> {
+                $t { val: 0 } ..= $t { val: self.len() }
+            }
             /// Iterator over all the indices.
             #[inline]
-            pub fn indices(&self) -> impl Iterator<Item = $t> {
+            pub fn indices(&self) -> impl std::iter::Iterator<Item = $t> {
                 (0..self.len()).into_iter().map(|i| $t { val: i })
             }
 
@@ -141,7 +146,7 @@ macro_rules! map_codegen {
             /// Ref-iterator over the index/element pairs.
             #[inline]
             pub fn index_iter<'a>(&'a self) ->
-                impl Iterator<Item = ($t, &'a T)>
+                impl std::iter::Iterator<Item = ($t, &'a T)>
                 + DoubleEndedIterator
                 + ExactSizeIterator
             where T: 'a {
@@ -152,7 +157,7 @@ macro_rules! map_codegen {
             /// Ref-mut-iterator over the index/element pairs.
             #[inline]
             pub fn index_iter_mut<'a>(&'a mut self) ->
-                impl Iterator<Item = ($t, &'a mut T)>
+                impl std::iter::Iterator<Item = ($t, &'a mut T)>
                 + DoubleEndedIterator
                 + ExactSizeIterator
             where T: 'a {
@@ -163,7 +168,7 @@ macro_rules! map_codegen {
             /// Own-iterator over the index/element pairs.
             #[inline]
             pub fn into_index_iter(self) ->
-                impl Iterator<Item = ($t, T)>
+                impl std::iter::Iterator<Item = ($t, T)>
                 + DoubleEndedIterator
                 + ExactSizeIterator
             {
@@ -200,24 +205,30 @@ macro_rules! map_codegen {
                 }
             }
 
-            $crate::non_strict! {
-                /// Splits the map into the elements before and after some index.
-                ///
-                /// More precisely, returns a tuple of
-                ///
-                /// - an iterator over the elements *before* `idx`,
-                /// - the element at position `idx`, and
-                /// - an iterator over the elements *after* `idx`.
-                #[inline]
-                pub fn split(&self, idx: $t) -> (impl Iterator<Item = &T>, &T, impl Iterator<Item = &T>) {
-                    let before = self.vec[0..idx.val].iter();
-                    let after = if idx.val < self.vec.len() {
-                        self.vec[idx.val + 1 ..].iter()
-                    } else {
-                        self.vec[0..0].iter()
-                    };
-                    (before, &self.vec[idx.val], after)
-                }
+            /// Splits the map into the elements before and after some index.
+            ///
+            /// More precisely, returns a tuple of
+            ///
+            /// - an iterator over the elements *before* `idx`,
+            /// - the element at position `idx`, and
+            /// - an iterator over the elements *after* `idx`.
+            #[inline]
+            pub fn split(&self, idx: $t) -> (
+                impl std::iter::Iterator<Item = ($t, &T)>,
+                &T,
+                impl std::iter::Iterator<Item = ($t, &T)>,
+            ) {
+                let before = self.vec[0..idx.val].iter().enumerate().map(
+                    |(i, elm)| ($t { val: i }, elm)
+                );
+                let after = if idx.val < self.vec.len() {
+                    self.vec[idx.val + 1 ..].iter()
+                } else {
+                    self.vec[0..0].iter()
+                }.enumerate().map(
+                    move |(i, elm)| ($t { val: 1 + i + idx.val  }, elm)
+                );
+                (before, &self.vec[idx.val], after)
             }
         }
 

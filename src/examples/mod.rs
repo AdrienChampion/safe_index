@@ -2,14 +2,12 @@
 //!
 //! Do not use the types in this module.
 
-/// Example of zero-cost wrapping. **Do not use this.**
+/// A basic example.
 ///
 /// ```
 /// safe_index::new!{
 ///     /// Index of a variable.
 ///     VarIndex,
-///     /// Range over `VarIndex`.
-///     range: VarRange,
 ///     /// Set of variable indexes.
 ///     btree set: VarBSet,
 ///     /// Map of variable indexes.
@@ -20,7 +18,6 @@
 /// fn main() {
 ///     use std::mem::size_of;
 ///     assert_eq!( size_of::<VarIndex>(), size_of::<usize>() );
-///     assert_eq!( size_of::<VarRange>(), 2 * size_of::<usize>() );
 ///     assert_eq!( size_of::<VarMap<String>>(), size_of::<Vec<String>>() );
 ///
 ///     let mut var_values = VarMap::with_capacity(3);
@@ -30,6 +27,26 @@
 ///     assert_eq! { var_values[v_0], 7  }
 ///     assert_eq! { var_values[v_1], 3  }
 ///     assert_eq! { var_values[v_2], 11 }
+///
+///     let mut iter = var_values[v_0..v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[v_0..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
+///     let mut iter = var_values[..=v_2].into_iter();
+///     assert_eq! { iter.next(), Some(&7)  }
+///     assert_eq! { iter.next(), Some(&3)  }
+///     assert_eq! { iter.next(), Some(&11) }
+///     assert_eq! { iter.next(), None      }
 ///
 ///     let mut check = vec![11, 3, 7];
 ///     for val in &var_values {
@@ -58,8 +75,6 @@ pub mod basic {
     new! {
         /// Index of a variable.
         VarIndex,
-        /// Range over `VarIndex`.
-        range: VarRange,
         /// Set of variable indexes.
         btree set: VarBSet,
         /// Map of variable indexes.
@@ -72,7 +87,6 @@ pub mod basic {
     fn run() {
         use std::mem::size_of;
         assert_eq!(size_of::<VarIndex>(), size_of::<usize>());
-        assert_eq!(size_of::<VarRange>(), 2 * size_of::<usize>());
         assert_eq!(size_of::<VarMap<String>>(), size_of::<Vec<String>>());
 
         let mut var_values = VarMap::with_capacity(3);
@@ -82,6 +96,26 @@ pub mod basic {
         assert_eq! { var_values[v_0], 7  }
         assert_eq! { var_values[v_1], 3  }
         assert_eq! { var_values[v_2], 11 }
+
+        let mut iter = var_values[v_0..v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[v_0..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
+        let mut iter = var_values[..=v_2].into_iter();
+        assert_eq! { iter.next(), Some(&7)  }
+        assert_eq! { iter.next(), Some(&3)  }
+        assert_eq! { iter.next(), Some(&11) }
+        assert_eq! { iter.next(), None      }
 
         let mut check = vec![11, 3, 7];
         for val in &var_values {

@@ -27,9 +27,6 @@
 //! can provide more types. After the mandatory identifier `Idx` for the type of indexes, you can
 //! add these:
 //!
-//! - `range <Range>`: creates an iterator named `<Range>` between two `Idx`s (the upper bound is
-//!   exclusive). If this constructor is present, `Idx` will have a `up_to` function that creates a
-//!   range between two `Idx`s. This constructor can only appear once.
 //! - `map <Map>`: creates a wrapper named `<Map>` around a vector, indexed by `Idx`.
 //! - `btree set <Set>`: alias type for a binary tree set of `Idx`s.
 //! - `btree map <Map>`: alias type for a binary tree map from `Idx` to something.
@@ -223,53 +220,6 @@ macro_rules! btree_map_codegen {
     };
 }
 
-/// Generates an alias type for [`std::collections::BTreeMap`] of indices.
-#[macro_export]
-#[doc(hidden)]
-macro_rules! range_codegen {
-    { $t:ident,
-        $(#[$meta:meta])*
-        $range:ident $($tail:tt)*
-    } => {
-        impl $t {
-            /// Creates a range between two indices (upper bound is exclusive).
-            pub fn up_to(self, end : $t) -> $range {
-                $range { start: self, end }
-            }
-        }
-        $(#[$meta])*
-        #[derive(Debug)]
-        pub struct $range {
-            start: $t,
-            end: $t,
-        }
-        impl $range {
-            /// Creates a new range, exclusive on the upper bound.
-            pub fn new<
-                T1: std::convert::Into<$t>,
-                T2: std::convert::Into<$t>,
-            >(start: T1, end: T2) -> Self {
-                $range { start: start.into(), end: end.into() }
-            }
-            /// Creates a range from `0` to something.
-            pub fn zero_to<T: std::convert::Into<$t>>(end: T) -> Self {
-                $range { start: $t { val: 0 }, end: end.into() }
-            }
-        }
-        impl std::iter::Iterator for $range {
-            type Item = $t ;
-            fn next(&mut self) -> Option<$t> {
-                if self.start >= self.end { None } else {
-                    let res = Some(self.start) ;
-                    self.start.val += 1 ;
-                    res
-                }
-            }
-        }
-        $crate::handle!{ $t $($tail)* }
-    };
-}
-
 /// Handles some user input and decides what to do.
 #[macro_export]
 #[doc(hidden)]
@@ -279,9 +229,6 @@ macro_rules! handle {
     };
     { $t:ident, $(#[$meta:meta])* btree map: $($tail:tt)* } => {
         $crate::btree_map_codegen! { $t, $(#[$meta])* $($tail)* }
-    };
-    { $t:ident, $(#[$meta:meta])* range: $($tail:tt)* } => {
-        $crate::range_codegen! { $t, $(#[$meta])* $($tail)* }
     };
     { $t:ident, $(#[$meta:meta])* map: $($tail:tt)* } => {
         $crate::map_codegen! { $t, $(#[$meta])* $($tail)* }
@@ -295,9 +242,16 @@ macro_rules! handle {
             "` from your input",
         ));
     };
+    { $t:ident, range: $range:ident $($tail:tt)* } => {
+        compile_error!(concat!(
+            "`range` does not exist anymore, use `..` and `..=` operators instead and remove `range: ",
+            stringify!($range),
+            "` from your input",
+        ));
+    };
     { $t:ident, $token:tt $($tail:tt)* } => {
         compile_error!(concat!(
-            "expected `btree set`, `btree map`, `range` or `map`, found unexpected token `",
+            "expected `btree set`, `btree map` or `map` but found unexpected token `",
             stringify!($token),
             "`",
         ));
@@ -382,14 +336,6 @@ macro_rules! new {
                 self.val
             }
         }
-        impl<T: std::convert::Into<usize>> std::ops::Add<T> for $t {
-            type Output = $t ;
-            #[inline]
-            fn add(mut self, rhs: T) -> $t {
-                self.val += rhs.into() ;
-                self
-            }
-        }
         impl std::ops::Deref for $t {
             type Target = usize ;
             #[inline]
@@ -418,6 +364,14 @@ macro_rules! new {
             }
         }
         $crate::non_strict! {
+            impl<T: std::convert::Into<usize>> std::ops::Add<T> for $t {
+                type Output = $t ;
+                #[inline]
+                fn add(mut self, rhs: T) -> $t {
+                    self.val += rhs.into() ;
+                    self
+                }
+            }
             impl std::convert::From<usize> for $t {
                 #[inline]
                 fn from(val: usize) -> Self {
