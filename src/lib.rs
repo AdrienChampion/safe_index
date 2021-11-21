@@ -295,9 +295,16 @@ macro_rules! handle {
             "` from your input",
         ));
     };
-    { $t:ident $token:tt $($tail:tt)* } => {
+    { $t:ident, $token:tt $($tail:tt)* } => {
         compile_error!(concat!(
             "expected `btree set`, `btree map`, `range` or `map`, found unexpected token `",
+            stringify!($token),
+            "`",
+        ));
+    };
+    { $t:ident $token:tt $($tail:tt)* } => {
+        compile_error!(concat!(
+            "expected comma, found unexpected token `",
             stringify!($token),
             "`",
         ));
