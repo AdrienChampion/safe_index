@@ -1,5 +1,6 @@
 # v0.9.17
 
+- safe_index is no `no_std`
 - macro input
     - `map MapType` is not followed by `with iter IterType` anymore
     - `range RangeType` has been removed, use `..` and `..=` operators instead

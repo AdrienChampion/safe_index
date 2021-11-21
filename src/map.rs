@@ -12,12 +12,12 @@ macro_rules! map_codegen {
         $(#[$meta])*
         #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
         pub struct $map<T> {
-            vec: std::vec::Vec<T>
+            vec: $crate::alloc::vec::Vec<T>
         }
 
         $crate::non_strict! {
-            impl<T> std::convert::From<std::vec::Vec<T>> for $map<T> {
-                fn from(vec: Vec<T>) -> Self {
+            impl<T> core::convert::From<$crate::alloc::vec::Vec<T>> for $map<T> {
+                fn from(vec: $crate::alloc::vec::Vec<T>) -> Self {
                     Self { vec }
                 }
             }
@@ -27,12 +27,12 @@ macro_rules! map_codegen {
             /// Creates an empty map.
             #[inline]
             pub const fn new() -> Self {
-                $map { vec: Vec::new() }
+                $map { vec: $crate::alloc::vec::Vec::new() }
             }
             /// Creates an empty map with some capacity.
             #[inline]
             pub fn with_capacity(capacity: usize) -> Self {
-                $map { vec: Vec::with_capacity(capacity) }
+                $map { vec: $crate::alloc::vec::Vec::with_capacity(capacity) }
             }
 
             /// Reserves some space for the map.
@@ -129,26 +129,26 @@ macro_rules! map_codegen {
 
             /// Range of the map.
             #[inline]
-            pub fn range(&self) -> std::ops::RangeInclusive<$t> {
+            pub fn range(&self) -> core::ops::RangeInclusive<$t> {
                 $t { val: 0 } ..= $t { val: self.len() }
             }
             /// Iterator over all the indices.
             #[inline]
-            pub fn indices(&self) -> impl std::iter::Iterator<Item = $t> {
+            pub fn indices(&self) -> impl core::iter::Iterator<Item = $t> {
                 (0..self.len()).into_iter().map(|i| $t { val: i })
             }
 
             /// Ref-iterator over the elements.
             #[inline]
-            pub fn iter(& self) -> std::slice::Iter<T> {
+            pub fn iter(& self) -> core::slice::Iter<T> {
                 self.vec.iter()
             }
             /// Ref-iterator over the index/element pairs.
             #[inline]
             pub fn index_iter<'a>(&'a self) ->
-                impl std::iter::Iterator<Item = ($t, &'a T)>
-                + DoubleEndedIterator
-                + ExactSizeIterator
+                impl core::iter::Iterator<Item = ($t, &'a T)>
+                + core::iter::DoubleEndedIterator
+                + core::iter::ExactSizeIterator
             where T: 'a {
                 self.vec.iter().enumerate().map(|(idx, elm)| (
                     $t { val: idx }, elm
@@ -157,9 +157,9 @@ macro_rules! map_codegen {
             /// Ref-mut-iterator over the index/element pairs.
             #[inline]
             pub fn index_iter_mut<'a>(&'a mut self) ->
-                impl std::iter::Iterator<Item = ($t, &'a mut T)>
-                + DoubleEndedIterator
-                + ExactSizeIterator
+                impl core::iter::Iterator<Item = ($t, &'a mut T)>
+                + core::iter::DoubleEndedIterator
+                + core::iter::ExactSizeIterator
             where T: 'a {
                 self.vec.iter_mut().enumerate().map(|(idx, elm)| (
                     $t { val: idx }, elm
@@ -168,9 +168,9 @@ macro_rules! map_codegen {
             /// Own-iterator over the index/element pairs.
             #[inline]
             pub fn into_index_iter(self) ->
-                impl std::iter::Iterator<Item = ($t, T)>
-                + DoubleEndedIterator
-                + ExactSizeIterator
+                impl core::iter::Iterator<Item = ($t, T)>
+                + core::iter::DoubleEndedIterator
+                + core::iter::ExactSizeIterator
             {
                 self.vec.into_iter().enumerate().map(|(idx, elm)| (
                     $t { val: idx }, elm
@@ -178,7 +178,7 @@ macro_rules! map_codegen {
             }
             /// Ref-mut-iterator over the elements.
             #[inline]
-            pub fn iter_mut(&mut self) -> std::slice::IterMut<T> {
+            pub fn iter_mut(&mut self) -> core::slice::IterMut<T> {
                 self.vec.iter_mut()
             }
 
@@ -214,9 +214,9 @@ macro_rules! map_codegen {
             /// - an iterator over the elements *after* `idx`.
             #[inline]
             pub fn split(&self, idx: $t) -> (
-                impl std::iter::Iterator<Item = ($t, &T)>,
+                impl core::iter::Iterator<Item = ($t, &T)>,
                 &T,
-                impl std::iter::Iterator<Item = ($t, &T)>,
+                impl core::iter::Iterator<Item = ($t, &T)>,
             ) {
                 let before = self.vec[0..idx.val].iter().enumerate().map(
                     |(i, elm)| ($t { val: i }, elm)
@@ -236,131 +236,131 @@ macro_rules! map_codegen {
             /// Creates an empty vector with some capacity.
             #[inline]
             pub fn of_elems(elem: T, size: usize) -> Self {
-                $map { vec: vec![ elem ; size ] }
+                $map { vec: $crate::alloc::vec![ elem ; size ] }
             }
         }
 
-        impl<T> std::iter::IntoIterator for $map<T> {
+        impl<T> core::iter::IntoIterator for $map<T> {
             type Item = T ;
-            type IntoIter = std::vec::IntoIter<T> ;
-            fn into_iter(self) -> std::vec::IntoIter<T> {
+            type IntoIter = $crate::alloc::vec::IntoIter<T> ;
+            fn into_iter(self) -> $crate::alloc::vec::IntoIter<T> {
                 self.vec.into_iter()
             }
         }
-        impl<'a, T> std::iter::IntoIterator for &'a $map<T> {
+        impl<'a, T> core::iter::IntoIterator for &'a $map<T> {
             type Item = &'a T ;
-            type IntoIter = std::slice::Iter<'a, T> ;
-            fn into_iter(self) -> std::slice::Iter<'a, T> {
+            type IntoIter = core::slice::Iter<'a, T> ;
+            fn into_iter(self) -> core::slice::Iter<'a, T> {
                 self.iter()
             }
         }
-        impl<'a, T> std::iter::IntoIterator for &'a mut $map<T> {
+        impl<'a, T> core::iter::IntoIterator for &'a mut $map<T> {
             type Item = &'a mut T ;
-            type IntoIter = std::slice::IterMut<'a, T> ;
-            fn into_iter(self) -> std::slice::IterMut<'a, T> {
+            type IntoIter = core::slice::IterMut<'a, T> ;
+            fn into_iter(self) -> core::slice::IterMut<'a, T> {
                 self.iter_mut()
             }
         }
-        impl<T> std::iter::FromIterator<T> for $map<T> {
+        impl<T> core::iter::FromIterator<T> for $map<T> {
             fn from_iter<
-                I: std::iter::IntoIterator<Item = T>
+                I: core::iter::IntoIterator<Item = T>
             >(iter: I) -> Self {
                 $map { vec: iter.into_iter().collect() }
             }
         }
-        impl<T> std::ops::Index<$t> for $map<T> {
+        impl<T> core::ops::Index<$t> for $map<T> {
             type Output = T ;
             fn index(& self, index: $t) -> & T {
                 & self.vec[ index.get() ]
             }
         }
-        impl<T> std::ops::Index<std::ops::RangeFrom<$t>> for $map<T> {
+        impl<T> core::ops::Index<core::ops::RangeFrom<$t>> for $map<T> {
             type Output = [T];
-            fn index(& self, std::ops::RangeFrom { start }: std::ops::RangeFrom<$t>) -> &[T] {
+            fn index(& self, core::ops::RangeFrom { start }: core::ops::RangeFrom<$t>) -> &[T] {
                 & self.vec[ start.get() .. ]
             }
         }
-        impl<T> std::ops::Index<std::ops::Range<$t>> for $map<T> {
+        impl<T> core::ops::Index<core::ops::Range<$t>> for $map<T> {
             type Output = [T];
-            fn index(& self, std::ops::Range { start, end }: std::ops::Range<$t>) -> &[T] {
+            fn index(& self, core::ops::Range { start, end }: core::ops::Range<$t>) -> &[T] {
                 & self.vec[ start.get() .. end.get() ]
             }
         }
-        impl<T> std::ops::Index<std::ops::RangeInclusive<$t>> for $map<T> {
+        impl<T> core::ops::Index<core::ops::RangeInclusive<$t>> for $map<T> {
             type Output = [T];
-            fn index(& self, range: std::ops::RangeInclusive<$t>) -> &[T] {
+            fn index(& self, range: core::ops::RangeInclusive<$t>) -> &[T] {
                 & self.vec[ range.start().get() ..= range.end().get() ]
             }
         }
-        impl<T> std::ops::Index<std::ops::RangeFull> for $map<T> {
+        impl<T> core::ops::Index<core::ops::RangeFull> for $map<T> {
             type Output = [T];
-            fn index(& self, _: std::ops::RangeFull) -> &[T] {
+            fn index(& self, _: core::ops::RangeFull) -> &[T] {
                 & self.vec[..]
             }
         }
-        impl<T> std::ops::Index<std::ops::RangeTo<$t>> for $map<T> {
+        impl<T> core::ops::Index<core::ops::RangeTo<$t>> for $map<T> {
             type Output = [T];
-            fn index(& self, std::ops::RangeTo { end }: std::ops::RangeTo<$t>) -> &[T] {
+            fn index(& self, core::ops::RangeTo { end }: core::ops::RangeTo<$t>) -> &[T] {
                 & self.vec[..end.get()]
             }
         }
-        impl<T> std::ops::Index<std::ops::RangeToInclusive<$t>> for $map<T> {
+        impl<T> core::ops::Index<core::ops::RangeToInclusive<$t>> for $map<T> {
             type Output = [T];
             fn index(
                 & self,
-                std::ops::RangeToInclusive { end }: std::ops::RangeToInclusive<$t>
+                core::ops::RangeToInclusive { end }: core::ops::RangeToInclusive<$t>
             ) -> &[T] {
                 & self.vec[..=end.get()]
             }
         }
-        impl<T> std::ops::IndexMut<$t> for $map<T> {
+        impl<T> core::ops::IndexMut<$t> for $map<T> {
             fn index_mut(&mut self, index: $t) -> &mut T {
                 &mut self.vec[ index.get() ]
             }
         }
 
         $crate::non_strict! {
-            impl<T> std::ops::Index<
-                std::ops::Range<usize>
+            impl<T> core::ops::Index<
+                core::ops::Range<usize>
             > for $map<T> {
                 type Output = [T] ;
-                fn index(& self, index: std::ops::Range<usize>) -> & [T] {
+                fn index(& self, index: core::ops::Range<usize>) -> & [T] {
                     self.vec.index(index)
                 }
             }
-            impl<T> std::ops::Index<
-                std::ops::RangeInclusive<usize>
+            impl<T> core::ops::Index<
+                core::ops::RangeInclusive<usize>
             > for $map<T> {
                 type Output = [T] ;
-                fn index(& self, index: std::ops::RangeInclusive<usize>) -> & [T] {
+                fn index(& self, index: core::ops::RangeInclusive<usize>) -> & [T] {
                 self.vec.index(index)
                 }
             }
-            impl<T> std::ops::Index<
-                std::ops::RangeFrom<usize>
+            impl<T> core::ops::Index<
+                core::ops::RangeFrom<usize>
             > for $map<T> {
                 type Output = [T] ;
-                fn index(& self, index: std::ops::RangeFrom<usize>) -> & [T] {
+                fn index(& self, index: core::ops::RangeFrom<usize>) -> & [T] {
                     self.vec.index(index)
                 }
             }
-            impl<T> std::ops::Index<
-                std::ops::RangeTo<usize>
+            impl<T> core::ops::Index<
+                core::ops::RangeTo<usize>
             > for $map<T> {
                 type Output = [T] ;
-                fn index(& self, index: std::ops::RangeTo<usize>) -> & [T] {
+                fn index(& self, index: core::ops::RangeTo<usize>) -> & [T] {
                     self.vec.index(index)
                 }
             }
-            impl<T> std::ops::Index<
-                std::ops::RangeToInclusive<usize>
+            impl<T> core::ops::Index<
+                core::ops::RangeToInclusive<usize>
             > for $map<T> {
                 type Output = [T] ;
-                fn index(& self, index: std::ops::RangeToInclusive<usize>) -> & [T] {
+                fn index(& self, index: core::ops::RangeToInclusive<usize>) -> & [T] {
                     self.vec.index(index)
                 }
             }
-            impl<T> std::ops::Deref for $map<T> {
+            impl<T> core::ops::Deref for $map<T> {
                 type Target = Vec<T> ;
                 fn deref(& self) -> & Vec<T> {
                     & self.vec

@@ -20,7 +20,7 @@
 //!     /// Arity.
 //!     Arity
 //! }
-//! assert_eq! { std::mem::size_of::<Arity>(), std::mem::size_of::<usize>() }
+//! assert_eq! { core::mem::size_of::<Arity>(), core::mem::size_of::<usize>() }
 //! ```
 //!
 //! This is not very useful however, there's nothing for our index to index. Thankfully `new`
@@ -161,6 +161,10 @@
 //! [`examples::clients`]: examples/clients/index.html (clients example)
 //! [clients src]: examples/clients.rs.html (Code of the clients example)
 
+#![no_std]
+
+pub extern crate alloc;
+
 mod map;
 
 /// Discards its input if the `strict` feature is active.
@@ -192,7 +196,7 @@ macro_rules! non_strict {
     };
 }
 
-/// Generates an alias type for [`std::collections::BTreeSet`] of indices.
+/// Generates an alias type for [`alloc::collections::BTreeSet`] of indices.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! btree_set_codegen {
@@ -201,12 +205,12 @@ macro_rules! btree_set_codegen {
         $set:ident $($tail:tt)*
     } => {
         $(#[$meta])*
-        pub type $set = std::collections::BTreeSet<$t> ;
+        pub type $set = $crate::alloc::collections::BTreeSet<$t> ;
         $crate::handle!{ $t $($tail)* }
     };
 }
 
-/// Generates an alias type for [`std::collections::BTreeMap`] of indices.
+/// Generates an alias type for [`alloc::collections::BTreeMap`] of indices.
 #[macro_export]
 #[doc(hidden)]
 macro_rules! btree_map_codegen {
@@ -215,7 +219,7 @@ macro_rules! btree_map_codegen {
         $map:ident $($tail:tt)*
     } => {
         $(#[$meta])*
-        pub type $map<T> = std::collections::BTreeMap<$t, T> ;
+        pub type $map<T> = $crate::alloc::collections::BTreeMap<$t, T> ;
         $crate::handle!{ $t $($tail)* }
     };
 }
@@ -324,47 +328,47 @@ macro_rules! new {
                 self.val
             }
         }
-        impl std::convert::Into<usize> for $t {
+        impl core::convert::Into<usize> for $t {
             #[inline]
             fn into(self) -> usize {
                 self.val
             }
         }
-        impl<'a> std::convert::Into<usize> for &'a $t {
+        impl<'a> core::convert::Into<usize> for &'a $t {
             #[inline]
             fn into(self) -> usize {
                 self.val
             }
         }
-        impl std::ops::Deref for $t {
+        impl core::ops::Deref for $t {
             type Target = usize ;
             #[inline]
             fn deref(& self) -> & usize {
                 & self.val
             }
         }
-        impl std::fmt::Display for $t {
+        impl core::fmt::Display for $t {
             #[inline]
-            fn fmt(& self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+            fn fmt(& self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
                 write!(fmt, "{}", self.val)
             }
         }
-        impl std::cmp::PartialEq<usize> for $t {
+        impl core::cmp::PartialEq<usize> for $t {
             #[inline]
             fn eq(& self, int: & usize) -> bool {
                 self.val.eq(int)
             }
         }
-        impl std::cmp::PartialOrd<usize> for $t {
+        impl core::cmp::PartialOrd<usize> for $t {
             #[inline]
             fn partial_cmp(& self, int: & usize) -> Option<
-                std::cmp::Ordering
+                core::cmp::Ordering
             > {
                 self.val.partial_cmp(int)
             }
         }
         $crate::non_strict! {
-            impl<T: std::convert::Into<usize>> std::ops::Add<T> for $t {
+            impl<T: core::convert::Into<usize>> core::ops::Add<T> for $t {
                 type Output = $t ;
                 #[inline]
                 fn add(mut self, rhs: T) -> $t {
@@ -372,19 +376,19 @@ macro_rules! new {
                     self
                 }
             }
-            impl std::convert::From<usize> for $t {
+            impl core::convert::From<usize> for $t {
                 #[inline]
                 fn from(val: usize) -> Self {
                     $t::new(val)
                 }
             }
-            impl<'a> std::convert::From<&'a usize> for $t {
+            impl<'a> core::convert::From<&'a usize> for $t {
                 #[inline]
                 fn from(val: &'a usize) -> Self {
                     $t::new(* val)
                 }
             }
-            impl<T: std::convert::Into<usize>> std::ops::AddAssign<T> for $t {
+            impl<T: core::convert::Into<usize>> core::ops::AddAssign<T> for $t {
                 #[inline]
                 fn add_assign(&mut self, rhs: T) {
                     self.val += rhs.into()
