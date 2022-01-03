@@ -1,3 +1,9 @@
+# v0.9.19
+
+- maps (`Vec`s) using indices as keys now have a `map.index_from_usize(n)` function that generates
+    an index from a `usize` if and only if it is a legal index for this map; typically useful when
+    parsing element indices as `usize`s.
+
 # v0.9.17
 
 - new `strict` feature, off by default; when active

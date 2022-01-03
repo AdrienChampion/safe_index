@@ -41,6 +41,16 @@ macro_rules! map_codegen {
                 self.vec.reserve(capa)
             }
 
+            /// Generates an index from a [`usize`] when it is a legal index.
+            #[inline]
+            pub fn index_from_usize(&self, n: usize) -> Option<$t> {
+                if n < self.vec.len() {
+                    Some($t { val: n })
+                } else {
+                    None
+                }
+            }
+
             /// Retrieves an entry in the map.
             #[inline]
             pub fn get(&self, idx: $t) -> Option<&T> {

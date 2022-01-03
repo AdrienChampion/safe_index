@@ -1,6 +1,6 @@
 [package]
 name = "safe_index"
-version = "0.9.17"
+version = "0.9.19"
 authors = ["Adrien Champion <adrien.champion@email.com>"]
 description = "Type-safe indexes."
 documentation = "https://docs.rs/safe_index"

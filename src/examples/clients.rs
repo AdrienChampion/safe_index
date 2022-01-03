@@ -10,6 +10,17 @@
 //! let c_3 = data.add_client("client 3");
 //! let c_4 = data.add_client("client 4");
 //!
+//! let c_1_too = data.clients.index_from_usize(0);
+//! assert_eq!(Some(c_1), c_1_too);
+//! let c_2_too = data.clients.index_from_usize(1);
+//! assert_eq!(Some(c_2), c_2_too);
+//! let c_3_too = data.clients.index_from_usize(2);
+//! assert_eq!(Some(c_3), c_3_too);
+//! let c_4_too = data.clients.index_from_usize(3);
+//! assert_eq!(Some(c_4), c_4_too);
+//! let none_because_only_four_clients = data.clients.index_from_usize(4);
+//! assert_eq!(None, none_because_only_four_clients);
+//!
 //! let f_1 = data.add_file(FileInfo::new("file 1", vec![c_1, c_2]));
 //! let f_2 = data.add_file(FileInfo::new("file 2", vec![c_3]));
 //! let f_3 = data.add_file(FileInfo::new("file 3", vec![c_2]));
