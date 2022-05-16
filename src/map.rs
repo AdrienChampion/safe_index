@@ -10,7 +10,7 @@ macro_rules! map_codegen {
         $($tail:tt)*
     ) => {
         $(#[$meta])*
-        #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord)]
+        #[derive(Debug, Default, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
         pub struct $map<T> {
             vec: $crate::alloc::vec::Vec<T>
         }
