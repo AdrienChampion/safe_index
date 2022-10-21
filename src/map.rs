@@ -117,6 +117,13 @@ macro_rules! map_codegen {
                 self.vec.push(new_elem(idx));
                 idx
             }
+            /// Same as [`push_idx`], but the builder returns a result.
+            #[inline]
+            pub fn try_push_idx<E>(&mut self, new_elem: impl FnOnce($t) -> Result<T, E>) -> Result<$t, E> {
+                let idx = $t { val: self.len() };
+                self.vec.push(new_elem(idx)?);
+                Ok(idx)
+            }
 
             $crate::non_strict! {
                 /// Pops an element.

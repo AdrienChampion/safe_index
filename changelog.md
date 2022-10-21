@@ -1,3 +1,7 @@
+# v0.10.0
+
+- `try_push_idx`: same as `push_idx` but the builder produces a result
+
 # v0.9.19
 
 - maps (`Vec`s) using indices as keys now have a `map.index_from_usize(n)` function that generates
